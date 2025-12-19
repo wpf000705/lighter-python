@@ -254,17 +254,17 @@ class SignerClient:
 
     # === signer helpers ===
     @staticmethod
-    def __decode_tx_info(result: SignedTxResponse) -> Union[Tuple[str, str, str, None], Tuple[None, None, None, str]]:
+    def __decode_tx_info(result: SignedTxResponse) -> Union[Tuple[str, str, str, str, None], Tuple[None, None, None, None, str]]:
         if result.err:
             error = result.err.decode("utf-8")
-            return None, None, None, error
+            return None, None, None, None, error
 
         # Use txType from response if available, otherwise use the provided type
         tx_type = result.txType
         tx_info_str = result.txInfo.decode("utf-8") if result.txInfo else None
         tx_hash_str = result.txHash.decode("utf-8") if result.txHash else None
-
-        return tx_type, tx_info_str, tx_hash_str, None
+        msg_to_sign = result.messageToSign.decode("utf-8") if result.messageToSign else None
+        return tx_type, tx_info_str, tx_hash_str, msg_to_sign, None
 
     @staticmethod
     def __decode_and_sign_tx_info(eth_private_key: str, result: SignedTxResponse) -> Union[
@@ -383,7 +383,7 @@ class SignerClient:
             order_expiry=DEFAULT_28_DAY_ORDER_EXPIRY,
             nonce: int = DEFAULT_NONCE,
             api_key_index: int = DEFAULT_API_KEY_INDEX
-    ) -> Union[Tuple[str, str, str, None], Tuple[None, None, None, str]]:
+    ) -> Union[Tuple[str, str, str, str, None], Tuple[None, None, None, None, str]]:
         return self.__decode_tx_info(self.signer.SignCreateOrder(
             market_index,
             client_order_index,
